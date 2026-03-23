@@ -1,3 +1,7 @@
+"""
+Generates a massive, synthetic Matrix Room State DAG vector for testing and profiling SP1 STARKs.
+"""
+
 import hashlib
 import json
 import random
@@ -8,19 +12,20 @@ NUM_EVENTS = 1000000
 
 
 def sha256_hash(data_str):
+    """Computes a SHA-256 hex digest for simulating algorithmic cryptographic identifiers."""
     return hashlib.sha256(data_str.encode("utf-8")).hexdigest()
 
 
 print(f"Generating {NUM_EVENTS} synthetic Matrix state events...", file=sys.stderr)
 
 events = []
-room_id = "!massive_test_room:example.com"
+ROOM_ID = "!massive_test_room:example.com"
 
 # Create initial event
 events.append(
     {
-        "event_id": f"$00000-m-room-create",
-        "room_id": room_id,
+        "event_id": "$00000-m-room-create",
+        "room_id": ROOM_ID,
         "sender": "@creator:example.com",
         "type": "m.room.create",
         "content": {"creator": "@creator:example.com", "room_version": "10"},
@@ -53,8 +58,7 @@ for i in range(1, NUM_EVENTS):
         state_key = random.choice(members)
     elif ev_type == "m.room.message":
         content = {"body": f"Message {i}", "msgtype": "m.text"}
-        # Messages usually don't have state_key, but for State Res we usually only care about state events.
-        # Let's just generate state events to be safe.
+        # Messages usually lack state_key, but for Res we exclusively mock state events.
         ev_type = "m.room.topic"
         content = {"topic": f"Topic number {i}"}
     elif ev_type == "m.room.power_levels":
@@ -68,7 +72,7 @@ for i in range(1, NUM_EVENTS):
     events.append(
         {
             "event_id": event_id,
-            "room_id": room_id,
+            "room_id": ROOM_ID,
             "sender": sender,
             "type": ev_type,
             "content": content,
@@ -82,11 +86,12 @@ for i in range(1, NUM_EVENTS):
     if i % 10000 == 0:
         print(f"Generated {i} events...", file=sys.stderr)
 
-output_file = "res/massive_matrix_state.json"
-with open(output_file, "w") as f:
+OUTPUT_FILE = "res/massive_matrix_state.json"
+with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
     json.dump(events, f, indent=2)
 
 print(
-    f"Successfully generated {NUM_EVENTS} events (File size: {sys.getsizeof(events)} approx bytes). Saved to {output_file}",
+    f"Success! Generated {NUM_EVENTS} events "
+    f"({sys.getsizeof(events)} approx bytes) to {OUTPUT_FILE}",
     file=sys.stderr,
 )

@@ -1,3 +1,7 @@
+"""
+Fetches raw Matrix DAG state resolution arrays dynamically from live Server instances via HTTP.
+"""
+
 import json
 import os
 import sys
@@ -28,6 +32,7 @@ state_res = requests.get(
     # f"{HOMESERVER}/_matrix/federation/v1/state_ids/{ROOM_ID}", headers=headers
     f"{HOMESERVER}/_matrix/client/v3/rooms/{ROOM_ID}/state",
     headers=headers,
+    timeout=30,
 )
 
 if state_res.status_code != 200:
@@ -35,7 +40,7 @@ if state_res.status_code != 200:
     sys.exit(1)
 
 state_events = state_res.json()
-with open("res/real_matrix_state.json", "w") as f:
+with open("res/real_matrix_state.json", "w", encoding="utf-8") as f:
     json.dump(state_events, f, indent=2)
 
 print(
