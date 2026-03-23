@@ -80,9 +80,9 @@ pub fn main() {
         }
 
         // Only hash the minimal necessary binary data, never parse raw JSON
-        hasher.update(&optimized_state_hash);
-        hasher.update(&event.sender_pubkey);
-        hasher.update(&event.power_level.to_le_bytes());
+        hasher.update(optimized_state_hash);
+        hasher.update(event.sender_pubkey);
+        hasher.update(event.power_level.to_le_bytes());
     }
 
     let expected_hash: [u8; 32] = hasher.finalize().into();

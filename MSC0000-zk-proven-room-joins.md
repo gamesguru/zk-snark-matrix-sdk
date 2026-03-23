@@ -36,8 +36,12 @@ We propose a new versioned endpoint under the Federation API designed specifical
   },
   "delta": {
     "recent_state_events": [
-      { /* Raw State Event 1 (happened today) */ },
-      { /* Raw State Event 2 (happened today) */ }
+      {
+        /* Raw State Event 1 (happened today) */
+      },
+      {
+        /* Raw State Event 2 (happened today) */
+      }
     ]
   }
 }
@@ -48,7 +52,7 @@ We propose a new versioned endpoint under the Federation API designed specifical
 If a joining server receives a zero-knowledge proof, it must know exactly which circuit program verified the logic. Otherwise, a malicious host could write a circuit that simply returns `true` and bypasses power levels.
 
 **Rule:** Matrix Room Versions MUST dictate the allowed zkVM program.
-*When joining Room Version 12 via ZK-Proof, the receiving server MUST assert that the SNARK receipt's `image_id` perfectly matches the protocol-defined canonical Hash of the official SP1 Guest ELF for Room Version 12.*
+_When joining Room Version 12 via ZK-Proof, the receiving server MUST assert that the SNARK receipt's `image_id` perfectly matches the protocol-defined canonical Hash of the official SP1 Guest ELF for Room Version 12._
 
 ## 4. Epochs and Asynchronous Proving
 

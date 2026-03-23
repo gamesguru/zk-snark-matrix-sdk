@@ -44,7 +44,7 @@ fn main() {
     ];
 
     // Simulating Matrix topological sorting on the host
-    sorted_events.sort_by(|a, b| a.event_id_hash.cmp(&b.event_id_hash));
+    sorted_events.sort_by_key(|a| a.event_id_hash);
 
     let input = DAGMergeInput {
         room_version: 10,
@@ -57,7 +57,7 @@ fn main() {
     println!("> Generating Growth16 SNARK Proof for Matrix State Resolution...");
 
     // Setup the SP1 Proving Key
-    let (pk, _vk) = prover_client.setup(ZK_MATRIX_GUEST_ELF);
+    let (_pk, _vk) = prover_client.setup(ZK_MATRIX_GUEST_ELF);
 
     // In a production environment with a fully configured `succinct` toolchain,
     // we would actually run the proof generation:
@@ -76,10 +76,19 @@ fn main() {
     );
 }
 
+/// The testing module validates the verifiable computation Hinting Paradigm.
+///
+/// Since generating a true SP1 STARK/SNARK proof requires the `succinct` Docker
+/// toolchain, these tests dynamically simulate the zk-circuit logic (such as linear
+/// Hint verification and Ed25519 signature checks) natively in Rust. This ensures
+/// the exact same state resolution code path is evaluated without the heavy proving overhead.
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    /// Simulates a successful state resolution of a pre-sorted (Hinted) DAG.
+    /// This tests that given a topologically sorted array of state events, the
+    /// Verifier accepts the Hint and commits the proper state hash.
     #[test]
     fn test_positive_hinted_state_resolution() {
         let sorted_events = vec![

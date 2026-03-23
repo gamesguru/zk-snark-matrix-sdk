@@ -46,6 +46,18 @@ Implementing complex cryptographic operations, such as Zero-Knowledge recursive 
 
 Highly experimental. We use the SP1 Prover paired with Verifiable Computation (The Hinting Paradigm) to scale Matrix topology resolution to 1,000,000+ events. Check out the MSC Proposal or run the WebAssembly demo.
 
+## Testing and Simulation
+
+Generating a true zero-knowledge proof requires the official `succinct` SP1 toolchain (which utilizes Docker for Growth16 Snark wrapping). For development flexibility, the primary tests in `src/host/main.rs` are configured to structurally **simulate** the zk-circuit execution natively in Rust.
+
+To run the validations, simply use:
+
+```bash
+cargo test
+```
+
+This directly evaluates the Hinting paradigm logic—confirming the data formats and Matrix validation rules match perfectly—without burning the extreme CPU time required to generate the underlying cryptographic SNARK.
+
 ## License
 
 Dual-licensed under MIT or Apache 2.0.
