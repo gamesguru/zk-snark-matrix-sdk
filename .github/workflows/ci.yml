@@ -34,11 +34,11 @@ jobs:
       - name: Check Formatting
         run: cargo fmt --all -- --check
 
-      - name: Run Clippy (Linter)
-        run: cargo clippy -- -D warnings
-
       - name: Build
         run: cargo build --verbose
+
+      - name: Run Clippy (Linter)
+        run: cargo clippy -- -D warnings
 
       - name: Run ZK MockProver Tests
         run: cargo test -p zk-matrix-join-host --verbose
