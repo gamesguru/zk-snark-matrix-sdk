@@ -22,7 +22,7 @@ STYLE_RESET := \033[0m
 .DEFAULT_GOAL := help
 
 .PHONY: all
-all: build setup check test ##H Build, setup data, check code quality, and run tests
+all: build setup format lint test ##H Build, setup data, format, lint, and run tests
 
 .PHONY: build
 build: ##H Build the Rust project
@@ -54,9 +54,14 @@ web-demo: ##H Run a local web server to test the WASM UI
 	python3 -m http.server 8080
 
 .PHONY: test
-test: ##H Run the ZK Circuit Tests (Real verifiable simulation)
-	@echo "Running ZK Circuit Tests..."
+test: ##H Run fast Native Resolution tests (<1s)
+	@echo "Running Fast Native Tests..."
 	$(CARGO) test -p zk-matrix-join-host -- --nocapture
+
+.PHONY: test-zk
+test-zk: ##H Run the full ZKVM Parity Simulation (Takes several minutes)
+	@echo "Running Deep ZKVM Parity Simulation..."
+	$(CARGO) test -p zk-matrix-join-host -- --ignored --nocapture --test-threads=1
 
 .PHONY: setup
 setup: ##H Combined: Fetch real Matrix data and Ruma state resolution fixtures
@@ -109,8 +114,7 @@ LINT_LOCS_PY ?= $(shell git ls-files '*.py')
 
 .PHONY: format
 format: ##H Format the Rust and Python codebase
-	pre-commit run --all-files
-	$(CARGO) fmt
+	-pre-commit run --all-files
 	# Other formatters (python, json, etc)
 	-isort $(LINT_LOCS_PY)
 	-black $(LINT_LOCS_PY)
