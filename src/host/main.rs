@@ -5,18 +5,25 @@ use sp1_sdk::SP1Stdin;
 pub const ZK_MATRIX_GUEST_ELF: &[u8] = include_bytes!(env!("SP1_ELF_zk-matrix-join-guest"));
 
 // Represents the binary, packed data we send to the guest as a Hint.
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct GuestStateEvent {
-    pub event_id_hash: [u8; 32],
-    pub sender_pubkey: [u8; 32],
-    pub power_level: i64,
+use ruma_common::{CanonicalJsonObject, OwnedEventId, OwnedRoomId, OwnedUserId, RoomVersionId};
+use ruma_events::TimelineEventType;
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct GuestEvent {
+    pub event: CanonicalJsonObject,
+    pub content: Box<serde_json::value::RawValue>,
+    pub event_id: OwnedEventId,
+    pub room_id: OwnedRoomId,
+    pub sender: OwnedUserId,
+    pub event_type: TimelineEventType,
+    pub prev_events: Vec<OwnedEventId>,
+    pub auth_events: Vec<OwnedEventId>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct DAGMergeInput {
-    pub room_version: u32,
-    pub sorted_conflicts: Vec<GuestStateEvent>,
-    pub required_power_level: i64,
+    pub room_version: RoomVersionId,
+    pub events: Vec<GuestEvent>,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
@@ -50,42 +57,48 @@ fn main() {
         .expect("Failed to read JSON state file (try running the python fetcher!)");
     let raw_events: Vec<serde_json::Value> = serde_json::from_str(&file_content).unwrap();
 
-    let mut sorted_events: Vec<GuestStateEvent> = raw_events
+    let events: Vec<GuestEvent> = raw_events
         .into_iter()
         .map(|ev| {
-            use sha2::{Digest, Sha256};
-            let event_id = ev["event_id"].as_str().unwrap_or("").as_bytes();
-            let sender = ev["sender"].as_str().unwrap_or("").as_bytes();
+            let event: CanonicalJsonObject = serde_json::from_value(ev.clone())
+                .expect("Failed to parse Matrix event into CanonicalJsonObject!");
+            let content_val = ev.get("content").expect("missing content").clone();
+            let content: Box<serde_json::value::RawValue> =
+                serde_json::from_value(content_val).expect("invalid content");
+            let event_id: OwnedEventId =
+                serde_json::from_value(ev["event_id"].clone()).expect("missing event_id");
+            let room_id: OwnedRoomId =
+                serde_json::from_value(ev["room_id"].clone()).expect("missing room_id");
+            let sender: OwnedUserId =
+                serde_json::from_value(ev["sender"].clone()).expect("missing sender");
+            let event_type: TimelineEventType =
+                serde_json::from_value(ev["type"].clone()).expect("missing type");
+            let prev_events: Vec<OwnedEventId> =
+                serde_json::from_value(ev["prev_events"].clone()).expect("missing prev_events");
+            let auth_events: Vec<OwnedEventId> =
+                serde_json::from_value(ev["auth_events"].clone()).expect("missing auth_events");
 
-            let mut id_hasher = Sha256::new();
-            id_hasher.update(event_id);
-            let event_id_hash: [u8; 32] = id_hasher.finalize().into();
-
-            let mut sender_hasher = Sha256::new();
-            sender_hasher.update(sender);
-            let sender_pubkey: [u8; 32] = sender_hasher.finalize().into();
-
-            // Simulate parsing power_levels integer
-            GuestStateEvent {
-                event_id_hash,
-                sender_pubkey,
-                power_level: 50,
+            GuestEvent {
+                event,
+                content,
+                event_id,
+                room_id,
+                sender,
+                event_type,
+                prev_events,
+                auth_events,
             }
         })
         .collect();
 
     println!(
-        "> Successfully mapped exactly {} Matrix Events into structural ZK hints!",
-        sorted_events.len()
+        "> Successfully mapped exactly {} Matrix Events into Ruma ZK hints!",
+        events.len()
     );
 
-    // Simulating Matrix topological sorting on the host
-    sorted_events.sort_by_key(|a| a.event_id_hash);
-
     let input = DAGMergeInput {
-        room_version: 10,
-        sorted_conflicts: sorted_events,
-        required_power_level: 50,
+        room_version: RoomVersionId::V10,
+        events,
     };
 
     let mut stdin = SP1Stdin::new();
@@ -125,80 +138,55 @@ fn main() {
 mod tests {
     use super::*;
 
-    /// Simulates a successful state resolution of a pre-sorted (Hinted) DAG.
-    /// This tests that given a topologically sorted array of state events, the
-    /// Verifier accepts the Hint and commits the proper state hash.
+    /// Simulates a successful state resolution with active Ruma Event types.
     #[test]
     fn test_positive_hinted_state_resolution() {
-        let sorted_events = vec![
-            GuestStateEvent {
-                event_id_hash: [1u8; 32],
-                sender_pubkey: [0u8; 32],
-                power_level: 50,
-            },
-            GuestStateEvent {
-                event_id_hash: [2u8; 32],
-                sender_pubkey: [0u8; 32],
-                power_level: 100,
-            },
-        ];
+        // Construct a mock Matrix event to test serialization parity
+        let raw_json = serde_json::json!({
+            "event_id": "$test:example.com",
+            "room_id": "!room:example.com",
+            "sender": "@user:example.com",
+            "type": "m.room.member",
+            "state_key": "@user:example.com",
+            "content": {"membership": "join"},
+            "origin_server_ts": 12345,
+            "prev_events": [],
+            "auth_events": []
+        });
+
+        let event: CanonicalJsonObject = serde_json::from_value(raw_json.clone()).unwrap();
+        let event_id: OwnedEventId = serde_json::from_value(raw_json["event_id"].clone()).unwrap();
+        let room_id: OwnedRoomId = serde_json::from_value(raw_json["room_id"].clone()).unwrap();
+        let sender: OwnedUserId = serde_json::from_value(raw_json["sender"].clone()).unwrap();
+        let event_type: TimelineEventType =
+            serde_json::from_value(raw_json["type"].clone()).unwrap();
+        let prev_events: Vec<OwnedEventId> = vec![];
+        let auth_events: Vec<OwnedEventId> = vec![];
+
+        let content_val = raw_json.get("content").unwrap().clone();
+        let content: Box<serde_json::value::RawValue> =
+            serde_json::from_value(content_val).unwrap();
+
+        let guest_event = GuestEvent {
+            event,
+            content,
+            event_id,
+            room_id,
+            sender,
+            event_type,
+            prev_events,
+            auth_events,
+        };
 
         let input = DAGMergeInput {
-            room_version: 10,
-            sorted_conflicts: sorted_events,
-            required_power_level: 50,
+            room_version: RoomVersionId::V10,
+            events: vec![guest_event],
         };
 
         let mut stdin = SP1Stdin::new();
         stdin.write(&input);
-
-        // Simulation passed without SP1
     }
 
-    #[test]
-    #[should_panic(
-        expected = "Auth rule violation: Event sender does not have the required power level!"
-    )]
-    fn test_negative_invalid_power_levels() {
-        let input = DAGMergeInput {
-            room_version: 10,
-            sorted_conflicts: vec![GuestStateEvent {
-                event_id_hash: [1u8; 32],
-                sender_pubkey: [0u8; 32],
-                power_level: 49,
-            }],
-            required_power_level: 50,
-        };
-
-        for event in input.sorted_conflicts {
-            if event.power_level < input.required_power_level {
-                panic!("Auth rule violation: Event sender does not have the required power level!");
-            }
-        }
-    }
-
-    #[test]
-    #[should_panic(expected = "Host provided an unsorted DAG! Hint verification failed.")]
-    fn test_negative_bad_hint_sorting() {
-        let unsorted_events = vec![
-            GuestStateEvent {
-                event_id_hash: [2u8; 32],
-                sender_pubkey: [0u8; 32],
-                power_level: 50,
-            },
-            GuestStateEvent {
-                event_id_hash: [1u8; 32], // Invalid hint! 1 < 2, so it's unsorted.
-                sender_pubkey: [0u8; 32],
-                power_level: 100,
-            },
-        ];
-
-        let mut prev_hash = [0u8; 32];
-        for event in unsorted_events {
-            if event.event_id_hash < prev_hash {
-                panic!("Host provided an unsorted DAG! Hint verification failed.");
-            }
-            prev_hash = event.event_id_hash;
-        }
-    }
+    // The previous manual power level and sort tests are redacted as they
+    // are now handled internally by Ruma's state resolution logic in the guest.
 }
