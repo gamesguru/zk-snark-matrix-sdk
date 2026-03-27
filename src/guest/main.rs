@@ -15,6 +15,7 @@ pub struct GuestStateEvent {
 pub struct DAGMergeInput {
     pub room_version: u32,
     pub sorted_conflicts: Vec<GuestStateEvent>,
+    pub required_power_level: i64,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
@@ -30,9 +31,9 @@ pub fn main() {
     let mut prev_hash = [0u8; 32];
 
     for event in input.sorted_conflicts {
-        // Enforce protocol rules: user must have power level >= 0
-        if event.power_level < 0 {
-            panic!("Invalid Power Level detected in Auth Chain! ZK Proof Generation Failed.");
+        // Enforce protocol rules: sender must meet the required power level to send this state event
+        if event.power_level < input.required_power_level {
+            panic!("Auth rule violation: Event sender does not have the required power level!");
         }
 
         // O(N) Hint Verification: Ensure the Host supplied a correctly sorted array.

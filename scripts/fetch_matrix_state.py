@@ -9,29 +9,22 @@ import sys
 import requests
 
 # You can easily change this to a room ID you are in that has a huge history
-ROOM_ID = os.environ["MATRIX_ROOM_ID"]
-HOMESERVER = os.environ["MATRIX_HOMESERVER"]
-ACCESS_TOKEN = os.environ["MATRIX_TOKEN"]
+ROOM_ID = os.environ.get("MATRIX_ROOM_ID", "").strip()
+HOMESERVER = os.environ.get("MATRIX_HOMESERVER", "").strip()
+ACCESS_TOKEN = os.environ.get("MATRIX_TOKEN", "").strip()
 
-if not ACCESS_TOKEN:
-    print("Error: Please set the MATRIX_TOKEN environment variable.")
-    print("How to get it:")
-    print("  1. Open Element Web / Desktop")
-    print("  2. Click your profile picture -> All Settings -> Help & About")
+if not ACCESS_TOKEN or not HOMESERVER or not ROOM_ID:
     print(
-        "  3. Scroll to the bottom and click '<click to reveal>' next to Access Token"
+        "Error: Please set the MATRIX_TOKEN, MATRIX_HOMESERVER, and MATRIX_ROOM_ID environment variables.",
+        file=sys.stderr,
     )
-    print("\nThen run:")
-    print("  export MATRIX_TOKEN='your_token'")
-    print("  python3 .tmp/fetch_matrix_state.py")
     sys.exit(1)
 
 headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
 
 print(f"Fetching room state for {ROOM_ID}...", file=sys.stderr)
 state_res = requests.get(
-    # f"{HOMESERVER}/_matrix/federation/v1/state_ids/{ROOM_ID}", headers=headers
-    f"{HOMESERVER}/_matrix/client/v3/rooms/{ROOM_ID}/state",
+    f"{HOMESERVER}/_matrix/federation/v1/state_ids/{ROOM_ID}",
     headers=headers,
     stream=True,
     timeout=30,
@@ -66,7 +59,13 @@ state_events = json.loads(raw_bytes.decode("utf-8"))
 with open("res/real_matrix_state.json", "w", encoding="utf-8") as f:
     f.write(raw_bytes.decode("utf-8"))
 
+event_count = (
+    len(state_events)
+    if isinstance(state_events, list)
+    else len(state_events.get("pdu_ids", []))
+)
+
 print(
-    f"\nSuccess! Saved {len(state_events)} real state events",
+    f"\nSuccess! Saved payload containing {event_count} state events",
     file=sys.stderr,
 )

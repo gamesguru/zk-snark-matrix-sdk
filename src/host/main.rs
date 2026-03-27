@@ -16,6 +16,7 @@ pub struct GuestStateEvent {
 pub struct DAGMergeInput {
     pub room_version: u32,
     pub sorted_conflicts: Vec<GuestStateEvent>,
+    pub required_power_level: i64,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
@@ -84,6 +85,7 @@ fn main() {
     let input = DAGMergeInput {
         room_version: 10,
         sorted_conflicts: sorted_events,
+        required_power_level: 50,
     };
 
     let mut stdin = SP1Stdin::new();
@@ -144,6 +146,7 @@ mod tests {
         let input = DAGMergeInput {
             room_version: 10,
             sorted_conflicts: sorted_events,
+            required_power_level: 50,
         };
 
         let mut stdin = SP1Stdin::new();
@@ -154,7 +157,7 @@ mod tests {
 
     #[test]
     #[should_panic(
-        expected = "Invalid Power Level detected in Auth Chain! ZK Proof Generation Failed."
+        expected = "Auth rule violation: Event sender does not have the required power level!"
     )]
     fn test_negative_invalid_power_levels() {
         let input = DAGMergeInput {
@@ -162,13 +165,14 @@ mod tests {
             sorted_conflicts: vec![GuestStateEvent {
                 event_id_hash: [1u8; 32],
                 sender_pubkey: [0u8; 32],
-                power_level: -5,
+                power_level: 49,
             }],
+            required_power_level: 50,
         };
 
         for event in input.sorted_conflicts {
-            if event.power_level < 0 {
-                panic!("Invalid Power Level detected in Auth Chain! ZK Proof Generation Failed.");
+            if event.power_level < input.required_power_level {
+                panic!("Auth rule violation: Event sender does not have the required power level!");
             }
         }
     }

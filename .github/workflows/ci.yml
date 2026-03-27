@@ -46,7 +46,8 @@ jobs:
       - name: Fetch Real Matrix Room Data
         env:
           MATRIX_TOKEN: ${{ secrets.MATRIX_TOKEN }}
-          MATRIX_HOMESERVER: ${{ vars.MATRIX_HOMESERVER || 'https://matrix.org' }}
+          MATRIX_HOMESERVER: ${{ vars.MATRIX_HOMESERVER }}
+          MATRIX_ROOM_ID: ${{ vars.MATRIX_ROOM_ID }}
         run: make fetch
 
       - name: Execute Full SP1 Host Prover
