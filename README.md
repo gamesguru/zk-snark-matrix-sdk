@@ -25,6 +25,37 @@ Instant, 100% trustless joins.
 
 ## Architecture
 
+```mermaid
+graph TD
+    subgraph Epoch Rollup Phase
+        Events[(Raw DAG Events)] --> |Sent periodically| Prover[ZK Prover Node<br/>GPU Cluster]
+        Prover --> |"Computes State Res<br/>Generates SNARK"| SP1((SP1 zkVM))
+        SP1 --> |Returns ~300b Receipt| Res[Resident Matrix Server]
+    end
+
+    subgraph Case 1: Server Joining Room
+        Join[Joining Homeserver] --> |"GET /zk_state_proof"| Res
+        Res --> |"1. Checkpoint SNARK<br/>2. Unproven Event Delta"| Join
+        Join -.-> |"Verifies SNARK in 10ms<br/>Resolves Delta Natively"| State1((Trustless<br/>Room State))
+    end
+
+    subgraph Case 2: Client Edge-Verification
+        Client[Mobile/Web Client<br/>Element] --> |"GET /zk_state_proof"| Res
+        Res --> |"Passes Proof Down"| Client
+        Client -.-> |"WASM Verifies Proof<br/>No Server Trust Needed!"| State2((Trustless<br/>Room State))
+    end
+
+    classDef server fill:#4183C4,stroke:#333,stroke-width:2px,color:#fff;
+    classDef prover fill:#800080,stroke:#333,stroke-width:2px,color:#fff;
+    classDef client fill:#E24329,stroke:#333,stroke-width:2px,color:#fff;
+    classDef state fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff;
+
+    class Res,Join server;
+    class Prover,SP1 prover;
+    class Client client;
+    class State1,State2 state;
+```
+
 Built on the **SP1 RISC-V zkVM**, allowing native Rust libraries (`ruma-state-res`) to run in ZK.
 
 - **`src/host/` (The Prover):** Orchestrates state res, pre-sorts DAG branches, and builds linear "Hints" for the guest. Compresses the SP1 STARK into a tiny Groth16 SNARK.
