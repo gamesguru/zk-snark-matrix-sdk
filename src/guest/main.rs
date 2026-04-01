@@ -133,7 +133,9 @@ pub struct DAGMergeOutput {
 
 pub fn main() {
     // Read the input from the Host (the world-state hint containing events)
-    let input: DAGMergeInput = sp1_zkvm::io::read();
+    let input_bytes: Vec<u8> = sp1_zkvm::io::read();
+    let input: DAGMergeInput =
+        ciborium::from_reader(input_bytes.as_slice()).expect("Failed to deserialize CBOR input");
 
     println!("cycle-count-start: resolution-initialization");
 

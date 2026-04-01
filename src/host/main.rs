@@ -230,7 +230,11 @@ fn main() {
         .unwrap();
 
     let mut stdin = SP1Stdin::new();
-    stdin.write(&input);
+    {
+        let mut input_bytes = Vec::new();
+        ciborium::into_writer(&input, &mut input_bytes).expect("cbor failed");
+        stdin.write(&input_bytes);
+    }
 
     if std::env::var("SP1_PROVE").is_ok() {
         println!("Generating STARK Proof for Matrix State Resolution...");
@@ -343,7 +347,11 @@ mod tests {
         };
 
         let mut stdin = SP1Stdin::new();
-        stdin.write(&input);
+        {
+            let mut input_bytes = Vec::new();
+            ciborium::into_writer(&input, &mut input_bytes).expect("cbor failed");
+            stdin.write(&input_bytes);
+        }
     }
 
     /// Performs a full ZKVM parity check by executing the Guest binary
@@ -430,7 +438,11 @@ mod tests {
         // ZKVM Guest Execution (Simulation)
         let prover_client = ProverClient::builder().cpu().build();
         let mut stdin = SP1Stdin::new();
-        stdin.write(&input);
+        {
+            let mut input_bytes = Vec::new();
+            ciborium::into_writer(&input, &mut input_bytes).expect("cbor failed");
+            stdin.write(&input_bytes);
+        }
 
         let (mut public_values, _report) = prover_client
             .execute(sp1_sdk::Elf::Static(ZK_MATRIX_GUEST_ELF), stdin)
