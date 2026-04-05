@@ -23,11 +23,16 @@ if not ACCESS_TOKEN or not HOMESERVER or not ROOM_ID:
 headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
 
 print(f"Fetching room state for {ROOM_ID}...", file=sys.stderr)
+print(
+    f"Waiting for homeserver to compile JSON (this can take minutes for large spaces!)...",
+    file=sys.stderr,
+    flush=True,
+)
 state_res = requests.get(
-    f"{HOMESERVER}/_matrix/federation/v1/state_ids/{ROOM_ID}",
+    f"{HOMESERVER}/_matrix/client/v3/rooms/{ROOM_ID}/state",
     headers=headers,
     stream=True,
-    timeout=30,
+    timeout=300,  # Large rooms can take forever to timeout
 )
 
 if state_res.status_code != 200:
@@ -38,7 +43,7 @@ total_size = int(state_res.headers.get("content-length", 0))
 downloaded = 0
 chunks = []
 
-print("Streaming state payload from Homeserver...", file=sys.stderr)
+print("Streaming state payload from Homeserver...", file=sys.stderr, flush=True)
 for chunk in state_res.iter_content(chunk_size=1024 * 1024):
     if chunk:
         chunks.append(chunk)
@@ -47,10 +52,13 @@ for chunk in state_res.iter_content(chunk_size=1024 * 1024):
         if total_size > 0:
             percent = (downloaded / total_size) * 100
             print(
-                f"\rDownloaded {mb:.2f} MB ({percent:.1f}%)...", end="", file=sys.stderr
+                f"\rDownloaded {mb:.2f} MB ({percent:.1f}%)...",
+                end="",
+                file=sys.stderr,
+                flush=True,
             )
         else:
-            print(f"\rDownloaded {mb:.2f} MB...", end="", file=sys.stderr)
+            print(f"\rDownloaded {mb:.2f} MB...", end="", file=sys.stderr, flush=True)
 
 print("\nParsing massive JSON payload into RAM...", file=sys.stderr)
 raw_bytes = b"".join(chunks)
