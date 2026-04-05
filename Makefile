@@ -40,6 +40,11 @@ benchmark: ##H Run Verifiable Simulation for cycle counting (Fast, requires less
 	@echo "Running fast verifiable cycle simulation..."
 	$(CARGO) run --release --bin zk-matrix-join-host
 
+.PHONY: benchmark-unoptimized
+benchmark-unoptimized: ##H Run Verifiable Simulation with DAG Graph unoptimized inside Guest
+	@echo "Running fast verifiable cycle simulation (UNOPTIMIZED GRAPH NATIVE)..."
+	EXECUTE_UNOPTIMIZED=1 $(CARGO) run --release --bin zk-matrix-join-host
+
 .PHONY: benchmark-lite
 benchmark-lite: ##H Cycle count simulation on minimal 5-event fixture
 	@echo "Running fast verifiable cycle simulation on 5-event fixture..."

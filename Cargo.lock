@@ -6441,6 +6441,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "zk-matrix-join-guest-unoptimized"
+version = "0.1.0"
+dependencies = [
+ "ciborium",
+ "ruma-common",
+ "ruma-events",
+ "ruma-state-res",
+ "serde",
+ "serde_json",
+ "sha2",
+ "sp1-zkvm",
+]
+
+[[package]]
 name = "zk-matrix-join-host"
 version = "0.1.0"
 dependencies = [

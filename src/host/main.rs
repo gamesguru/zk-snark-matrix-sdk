@@ -19,6 +19,8 @@ use sp1_sdk::blocking::{ProveRequest, Prover, ProverClient};
 use sp1_sdk::SP1Stdin;
 
 pub const ZK_MATRIX_GUEST_ELF: &[u8] = include_bytes!(env!("SP1_ELF_zk-matrix-join-guest"));
+pub const ZK_MATRIX_GUEST_UNOPTIMIZED_ELF: &[u8] =
+    include_bytes!(env!("SP1_ELF_zk-matrix-join-guest-unoptimized"));
 
 // Represents the binary, packed data we send to the guest as a Hint.
 use ruma_common::{
@@ -311,8 +313,8 @@ fn main() {
     let resolved_state = ruma_state_res::resolve(
         &rules.authorization,
         state_res_v2_rules,
-        &vec![state_map],
-        vec![auth_chain_set],
+        &vec![state_map.clone()],
+        vec![auth_chain_set.clone()],
         |id| event_map.get(id).cloned(),
         |_| Some(HashSet::new()),
     )
@@ -362,13 +364,31 @@ fn main() {
     println!("> Initializing SP1 Prover (Fetching setup parameters...)");
     let prover_client = ProverClient::builder().cpu().build();
 
+    let is_unoptimized = std::env::var("EXECUTE_UNOPTIMIZED").is_ok();
+    let target_elf = if is_unoptimized {
+        ZK_MATRIX_GUEST_UNOPTIMIZED_ELF
+    } else {
+        ZK_MATRIX_GUEST_ELF
+    };
+
     let pk = prover_client
-        .setup(sp1_sdk::Elf::Static(ZK_MATRIX_GUEST_ELF))
+        .setup(sp1_sdk::Elf::Static(target_elf))
         .unwrap();
 
     let mut stdin = SP1Stdin::new();
-    {
-        // Path A: Write just the constraints, not the giant HashMap
+    if is_unoptimized {
+        println!("> Running UNOPTIMIZED Pipeline (Memory-Heavy Graph Resolution)");
+        let input = DAGMergeInput {
+            room_version: RoomVersionId::V10,
+            state_to_resolve: vec![state_map],
+            auth_chains: vec![auth_chain_set],
+            event_map: event_map.clone(),
+        };
+        let mut input_bytes = Vec::new();
+        ciborium::into_writer(&input, &mut input_bytes).unwrap();
+        stdin.write_vec(input_bytes);
+    } else {
+        println!("> Running OPTIMIZED Pipeline (Linear Edge Verification)");
         stdin.write(&edges);
         stdin.write(&expected_hash);
     }
@@ -398,7 +418,7 @@ fn main() {
         println!("(Note: This is a full RISC-V simulation of the Ruma algorithm)");
 
         let (mut public_values, execution_report) = prover_client
-            .execute(sp1_sdk::Elf::Static(ZK_MATRIX_GUEST_ELF), stdin)
+            .execute(sp1_sdk::Elf::Static(target_elf), stdin)
             .run()
             .expect("SP1 Execution failed!");
 
