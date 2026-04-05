@@ -35,10 +35,25 @@ run: ##H Run the ZK-Matrix-Join Demo
 	@echo "Running ZK-Matrix-Join Demo..."
 	$(CARGO) run --bin zk-matrix-join-host
 
+.PHONY: benchmark
+benchmark: ##H Run Verifiable Simulation for cycle counting (Fast, requires less RAM)
+	@echo "Running fast verifiable cycle simulation..."
+	$(CARGO) run --release --bin zk-matrix-join-host
+
+.PHONY: benchmark-lite
+benchmark-lite: ##H Cycle count simulation on minimal 5-event fixture
+	@echo "Running fast verifiable cycle simulation on 5-event fixture..."
+	MATRIX_FIXTURE_PATH=res/ruma_bootstrap_events.json $(CARGO) run --release --bin zk-matrix-join-host
+
 .PHONY: prove
 prove: ##H Build SP1 Guest ELF and Generate STARK Proof
 	@echo "Running Host Prover (Auto-Compiling SP1 RISC-V 32-bit Guest)..."
 	SP1_PROVE=true $(CARGO) run --release --bin zk-matrix-join-host
+
+.PHONY: prove-lite
+prove-lite: ##H Generate STARK Proof on the minimal 5-event fixture
+	@echo "Comparing benchmark parity: Proving offline 5-event fixture..."
+	MATRIX_FIXTURE_PATH=res/ruma_bootstrap_events.json SP1_PROVE=true $(CARGO) run --release --bin zk-matrix-join-host
 
 .PHONY: wasm
 wasm: ##H Build the WebAssembly light-client Verifier
@@ -73,11 +88,7 @@ setup: ##H Combined: Fetch real Matrix data and Ruma state resolution fixtures
 	else \
 		echo "Skipping real Matrix fetch (MATRIX_TOKEN not set)."; \
 	fi
-	@echo "Downloading Ruma State Res test fixtures..."
-	mkdir -p res
-	curl -sL "https://raw.githubusercontent.com/ruma/ruma/main/crates/ruma-state-res/tests/it/fixtures/bootstrap-private-chat.json" -o res/ruma_bootstrap_events.json
-	@echo "Saved to res/ruma_bootstrap_events.json"
-
+	@echo "Ruma State Res test fixtures are checked in to res/"
 
 .PHONY: cpu-info
 cpu-info: ##H Print CPU info relevant to native target-cpu
