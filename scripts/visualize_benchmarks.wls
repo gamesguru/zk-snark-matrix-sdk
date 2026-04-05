@@ -19,8 +19,8 @@ plot = Plot[
   ImageSize -> 800,
   PlotLegends -> Placed[
     {
-      "Naive Algebraic Intermediate Representation\n(Industry Standard Ruma)",
-      "Optimized Constraint Model\n(Topological Coprocessor)"
+     "Industry Standard Algebraic Intermediate Representation\n(Unoptimized SP1 zkVM)",
+     "Optimized Constraint Model\n(Topological Coprocessor Algorithm)"
     },
     Below
   ],
@@ -32,7 +32,7 @@ plot = Plot[
       Framed[
         Column[{
           Style["Speedup at 10k: 41.9x", Bold],
-          Style["Naive Model: O(n \!\(\*SubscriptBox[\(log\), \(2\)]\) n)"],
+          Style["Naive Model: O(n *\!\(\*SubscriptBox[\(log\), \(2\)]\) n)"],
           Style["Optimized Model: O(n)"]
         }],
         Background -> White, RoundingRadius -> 5
@@ -42,5 +42,8 @@ plot = Plot[
   }
 ];
 
-Export["../res/benchmark_visualization.png", plot];
-Print["Visualization exported to ../res/benchmark_visualization.png"]
+(* Resolve absolute path relative to script directory *)
+exportPath = ExpandFileName[FileNameJoin[{DirectoryName[ExpandFileName[$InputFileName]], "..", "res", "benchmark_visualization.png"}]];
+
+Export[exportPath, plot];
+Print["Visualization exported to ", exportPath]

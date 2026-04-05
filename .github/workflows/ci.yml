@@ -124,7 +124,7 @@ jobs:
             # 4. Calculate Speedup
             SPEEDUP=$(awk "BEGIN {print $NAIVE_CYCLES / $OPTIMIZED_CYCLES}")
 
-            echo "| $SIZE | $NAIVE_CYCLES | $OPTIMIZED_CYCLES | **${SPEEDUP:0:4}x** | \[✓\] |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Industry Standard AIR (Unoptimized)** | $NAIVE_CYCLES | $OPTIMIZED_CYCLES | **${SPEEDUP:0:4}x** | \[✓\] |" >> $GITHUB_STEP_SUMMARY
           done
       - name: Print Benchmark Narrative
         run: |
