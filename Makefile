@@ -142,6 +142,11 @@ lint: ##H Run clippy to lint the codebase and check compilation
 	@echo "Running ZK Security Scanner (vuln-002-VeilCash)..."
 	python3 scripts/detect_vuln_002.py
 
+.PHONY: coverage
+coverage: ##H Run code coverage and generate HTML report
+	@echo "Running code coverage..."
+	$(CARGO) tarpaulin --out Html --output-dir .tmp/coverage
+
 .PHONY: clean
 clean: ##H Clean up cache and optionally build artifacts
 	@echo "Cleaning up..."

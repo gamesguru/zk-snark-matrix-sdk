@@ -176,13 +176,27 @@ SP1_PROVE=1 SP1_PROVE_MODE=compressed cargo run --bin zk-matrix-join-host
 
 The SP1 zkVM runs standard RISC-V code. Vulnerabilities in the zkVM itself often rely on manipulating memory via unchecked pointers (e.g., the LambdaClass zero-register exploit requires an arbitrary memory write to address `0`).
 
-To cryptographically neutralize this entire class of VM exploits, **the entire workspace (Guest, Host, and WASM Verifier)** in this repository strictly bans `unsafe` Rust via the `#![forbid(unsafe_code)]` compiler directive. All event parsing relies on heavily tested, safe data abstractions (like `ruma-state-res` and `ciborium`), ensuring the applications cannot be manipulated into performing unsafe memory operations regardless of the input DAG structure.
+To cryptographically neutralize this entire class of VM exploits, **the entire workspace (Guest, Host, and WASM Verifier)** in this repository strictly bans `unsafe` Rust via the `#![forbid(unsafe_code)]` compiler directive. All event parsing relies on heavily tested, safe data abstractions (like `ruma-lean` and `ciborium`), ensuring the applications cannot be manipulated into performing unsafe memory operations regardless of the input DAG structure.
 
-### Post-Quantum Security
+## Development
 
-SP1 utilizes a **STARK** architecture. Unlike older SNARKs which rely on elliptic curve pairings (vulnerable to Shor's algorithm on a quantum computer), STARKs derive their security entirely from collision-resistant hash functions (like Poseidon2 and Blake3). This makes the ZK-proof generation inherently **Quantum-Safe**.
+### Code Coverage
 
-However, it is important to note that the underlying Matrix protocol currently relies on **Ed25519** elliptic curves for event authentication. Until the Matrix specification formally upgrades to a post-quantum signature scheme—most likely a **lattice-based signature scheme (like ML-DSA / Dilithium)** to keep event sizes small—the user signatures validated inside the proof remain theoretically vulnerable to future quantum attacks.
+To generate a code coverage report (requires `cargo-tarpaulin`):
+
+```bash
+make coverage
+```
+
+The HTML report will be generated in `.tmp/coverage/index.html`.
+
+### Parity Testing
+
+To run the full ZKVM parity simulation (comparing native Rust vs. proven Guest):
+
+```bash
+make test-zk
+```
 
 ## License
 

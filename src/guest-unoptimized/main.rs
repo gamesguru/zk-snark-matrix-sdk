@@ -20,7 +20,7 @@ sp1_zkvm::entrypoint!(main);
 
 use ruma_common::{CanonicalJsonObject, OwnedEventId, OwnedRoomId, OwnedUserId, RoomVersionId};
 use ruma_events::TimelineEventType;
-use ruma_lean::{lean_kahn_sort, HashMap, LeanEvent};
+use ruma_lean::{lean_kahn_sort, HashMap, LeanEvent, StateResVersion};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
