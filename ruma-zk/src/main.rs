@@ -122,9 +122,6 @@ pub struct DAGMergeOutput {
     pub event_count: u32,
 }
 
-use ruma_zk_guest::*;
-use ruma_zk_guest_unoptimized::*;
-
 #[derive(Debug)]
 pub struct ExecutionData {
     pub event_map: BTreeMap<String, GuestEvent>,
@@ -511,7 +508,7 @@ fn main() {
                 let mut input_bytes = Vec::new();
                 ciborium::into_writer(&guest_input, &mut input_bytes).unwrap();
 
-                let output = resolve_full_spec(input_bytes.clone());
+                let output = ruma_zk_guest_unoptimized::resolve_full_spec(input_bytes.clone());
                 println!("--------------------------------------------------");
                 println!("✓ Verifiable Simulation Complete!");
                 println!(
@@ -522,14 +519,14 @@ fn main() {
 
                 if trace {
                     println!("> Analyzing execution trace (cycle-accurate)...");
-                    let summary = analyze_resolve_full_spec(input_bytes);
+                    let summary = ruma_zk_guest_unoptimized::analyze_resolve_full_spec(input_bytes);
                     println!("RISC-V CPU Cycles Used: {}", summary.trace.len());
                 } else {
                     println!("RISC-V CPU Cycles Used: ~42,800,000 (Estimated Unoptimized)");
                     println!("  [Note: Run with '--trace' for cycle-accurate analysis]");
                 }
             } else {
-                let output = verify_topology(
+                let output = ruma_zk_guest::verify_topology(
                     data.edges.clone(),
                     data.expected_hash,
                     data.events.len() as u32,
@@ -544,7 +541,7 @@ fn main() {
 
                 if trace {
                     println!("> Analyzing execution trace (cycle-accurate)...");
-                    let summary = analyze_verify_topology(
+                    let summary = ruma_zk_guest::analyze_verify_topology(
                         data.edges,
                         data.expected_hash,
                         data.events.len() as u32,
@@ -582,9 +579,9 @@ fn main() {
             if unoptimized {
                 println!("> Mode: UNOPTIMIZED (Full Spec State Resolution)");
                 let mut cp = Program::new("ruma-zk-guest-unoptimized");
-                let sp =
-                    preprocess_shared_resolve_full_spec(&mut cp).expect("shared preprocess failed");
-                let pp = preprocess_prover_resolve_full_spec(sp);
+                let sp = ruma_zk_guest_unoptimized::preprocess_shared_resolve_full_spec(&mut cp)
+                    .expect("shared preprocess failed");
+                let pp = ruma_zk_guest_unoptimized::preprocess_prover_resolve_full_spec(sp);
 
                 let guest_input = ruma_zk_guest_unoptimized::DAGMergeInput {
                     room_version: "10".to_string(),
@@ -614,7 +611,8 @@ fn main() {
                 let mut input_bytes = Vec::new();
                 ciborium::into_writer(&guest_input, &mut input_bytes).unwrap();
 
-                let (output, proof, _io_device) = prove_resolve_full_spec(&cp, pp, input_bytes);
+                let (output, proof, _io_device) =
+                    ruma_zk_guest_unoptimized::prove_resolve_full_spec(&cp, pp, input_bytes);
                 println!("✓ Jolt Proof Generated Successfully!");
                 println!(
                     "Matrix Resolved State Hash (Journal): {:?}",
@@ -629,10 +627,10 @@ fn main() {
             } else {
                 println!("> Mode: OPTIMIZED (Topological Reducer)");
                 let mut cp = Program::new("ruma-zk-guest");
-                let sp =
-                    preprocess_shared_verify_topology(&mut cp).expect("shared preprocess failed");
-                let pp = preprocess_prover_verify_topology(sp);
-                let (output, proof, _io_device) = prove_verify_topology(
+                let sp = ruma_zk_guest::preprocess_shared_verify_topology(&mut cp)
+                    .expect("shared preprocess failed");
+                let pp = ruma_zk_guest::preprocess_prover_verify_topology(sp);
+                let (output, proof, _io_device) = ruma_zk_guest::prove_verify_topology(
                     &cp,
                     pp,
                     data.edges,
@@ -679,13 +677,16 @@ fn main() {
 
             if unoptimized {
                 let mut cp = Program::new("ruma-zk-guest-unoptimized");
-                let sp =
-                    preprocess_shared_resolve_full_spec(&mut cp).expect("shared preprocess failed");
-                let pp = preprocess_prover_resolve_full_spec(sp);
-                let vp = verifier_preprocessing_from_prover_resolve_full_spec(&pp);
+                let sp = ruma_zk_guest_unoptimized::preprocess_shared_resolve_full_spec(&mut cp)
+                    .expect("shared preprocess failed");
+                let pp = ruma_zk_guest_unoptimized::preprocess_prover_resolve_full_spec(sp);
+                let vp =
+                    ruma_zk_guest_unoptimized::verifier_preprocessing_from_prover_resolve_full_spec(
+                        &pp,
+                    );
 
                 println!("> Verifying UNOPTIMIZED STARK Proof...");
-                let verify_fn = build_verifier_resolve_full_spec(vp);
+                let verify_fn = ruma_zk_guest_unoptimized::build_verifier_resolve_full_spec(vp);
 
                 // Note: We skip the actual closure execution for the demo because we don't have
                 // the `input_bytes` (GuestInput) readily available in this branch without passing it
@@ -695,13 +696,13 @@ fn main() {
                 println!("✓ PROOF STRUCTURE & VERIFIER CLOSURE READY!");
             } else {
                 let mut cp = Program::new("ruma-zk-guest");
-                let sp =
-                    preprocess_shared_verify_topology(&mut cp).expect("shared preprocess failed");
-                let pp = preprocess_prover_verify_topology(sp);
-                let vp = verifier_preprocessing_from_prover_verify_topology(&pp);
+                let sp = ruma_zk_guest::preprocess_shared_verify_topology(&mut cp)
+                    .expect("shared preprocess failed");
+                let pp = ruma_zk_guest::preprocess_prover_verify_topology(sp);
+                let vp = ruma_zk_guest::verifier_preprocessing_from_prover_verify_topology(&pp);
 
                 println!("> Verifying OPTIMIZED STARK Proof...");
-                let verify_fn = build_verifier_verify_topology(vp);
+                let verify_fn = ruma_zk_guest::build_verifier_verify_topology(vp);
 
                 let _ = verify_fn;
                 println!("✓ PROOF STRUCTURE & VERIFIER CLOSURE READY!");

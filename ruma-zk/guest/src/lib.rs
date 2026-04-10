@@ -15,8 +15,7 @@
 #![forbid(unsafe_code)]
 #![allow(unexpected_cfgs)]
 
-extern crate jolt_sdk as jolt;
-use jolt::*;
+use jolt::provable;
 use serde::{Deserialize, Serialize};
 use std::vec::Vec;
 

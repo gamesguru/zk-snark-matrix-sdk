@@ -15,8 +15,7 @@
 #![forbid(unsafe_code)]
 #![allow(unexpected_cfgs)]
 
-extern crate jolt_sdk as jolt;
-use jolt::*;
+use jolt::provable;
 use ruma_lean::{lean_kahn_sort, HashMap, LeanEvent, StateResVersion};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
