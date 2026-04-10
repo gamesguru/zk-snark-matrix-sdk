@@ -19,18 +19,22 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub fn verify_matrix_join(
     _proof_bytes: &[u8],
-    _public_inputs: &[u8],
-    _expected_vkey_hash: &str,
+    _commitment_bytes: &[u8],
+    _expected_state_hash: &str,
 ) -> bool {
     // Jolt WASM Verifier Placeholder
     // TODO: Integrate Jolt's verification logic once stabilized for WASM targets.
-    !_proof_bytes.is_empty()
+    !_proof_bytes.is_empty() && !_commitment_bytes.is_empty()
 }
 
 #[wasm_bindgen]
-pub fn timed_verify(proof_bytes: &[u8], public_inputs: &[u8], expected_vkey_hash: &str) -> String {
+pub fn timed_verify(
+    proof_bytes: &[u8],
+    commitment_bytes: &[u8],
+    expected_state_hash: &str,
+) -> String {
     let start = web_time::Instant::now();
-    let success = verify_matrix_join(proof_bytes, public_inputs, expected_vkey_hash);
+    let success = verify_matrix_join(proof_bytes, commitment_bytes, expected_state_hash);
     let duration = start.elapsed();
 
     format!(

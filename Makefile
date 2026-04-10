@@ -10,9 +10,9 @@ ifneq (,$(wildcard ./.env))
 endif
 
 # Clean quotes from variables to avoid "makefile things"
-MATRIX_TOKEN := $(subst ",,$(subst ",,$(MATRIX_TOKEN)))
-MATRIX_HOMESERVER := $(subst ",,$(subst ",,$(MATRIX_HOMESERVER)))
-MATRIX_ROOM_ID := $(subst ",,$(subst ",,$(MATRIX_ROOM_ID)))
+MATRIX_TOKEN := $(subst ",,$(subst ',,$(MATRIX_TOKEN)))
+MATRIX_HOMESERVER := $(subst ",,$(subst ',,$(MATRIX_HOMESERVER)))
+MATRIX_ROOM_ID := $(subst ",,$(subst ',,$(MATRIX_ROOM_ID)))
 
 export RUST_BACKTRACE ?= 1
 export
@@ -36,22 +36,27 @@ run: benchmark
 .PHONY: benchmark
 benchmark: ##H Run the ZK-Matrix-Join Simulation
 	@echo "Running ZK-Matrix-Join Benchmark..."
-	$(CARGO) run --release --bin zk-matrix-join-host
+	$(CARGO) run --release --bin zk-matrix-join-host -- run
 
 .PHONY: benchmark-lite
 benchmark-lite: ##H Run Simulation with Tiny 5-Event Graph
 	@echo "Running ZK-Matrix-Join Benchmark (Lite)..."
-	$(CARGO) run --release --bin zk-matrix-join-host -- --input res/ruma_bootstrap_events.json
+	$(CARGO) run --release --bin zk-matrix-join-host -- run --input res/ruma_bootstrap_events.json
 
 .PHONY: benchmark-batch
 benchmark-batch: ##H Run Simulation with Concise DSL Fixtures
 	@echo "Running ZK-Matrix-Join Benchmark (Batch DSL)..."
-	$(CARGO) run --release --bin zk-matrix-join-host -- --batch demo
+	$(CARGO) run --release --bin zk-matrix-join-host -- run --batch demo
 
 .PHONY: prove
 prove: ##H Generate full Jolt STARK Proof
 	@echo "Generating Jolt STARK Proof..."
-	RUST_LOG=info $(CARGO) run --release --bin zk-matrix-join-host -- --prove
+	RUST_LOG=info $(CARGO) run --release --bin zk-matrix-join-host -- run --prove
+
+.PHONY: verify
+verify: ##H Verify an existing Jolt STARK Proof
+	@echo "Verifying Jolt STARK Proof..."
+	$(CARGO) run --release --bin zk-matrix-join-host -- verify
 
 .PHONY: wasm
 wasm: ##H Build the WebAssembly light-client Verifier
