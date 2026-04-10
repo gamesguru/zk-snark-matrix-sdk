@@ -70,15 +70,13 @@ web-demo: ##H Run a local web server to test the WASM UI
 
 .PHONY: test
 test: ##H Run fast Native Resolution tests (<1s)
-	@echo "Running Fast Native Tests"
-	$(CARGO) test -- --nocapture
-	@echo "Running ruma-lean formal parity tests..."
-	$(CARGO) test -p ruma-lean
+	$(CARGO) test -p ruma-zk -- --nocapture
+	$(CARGO) test -p ruma-lean -- --nocapture
 
 .PHONY: test-zk
 test-zk: ##H Run the full Jolt Parity Simulation
 	@echo "Running Deep Jolt Parity Simulation"
-	RUST_LOG=info RAYON_NUM_THREADS=1 $(CARGO) test --release -- --ignored --nocapture --test-threads=1
+	RUST_LOG=info RAYON_NUM_THREADS=1 $(CARGO) test --release -p ruma-zk -- --ignored --nocapture
 
 .PHONY: setup
 setup: ##H Combined: Fetch real Matrix data and Ruma state resolution fixtures
@@ -128,7 +126,7 @@ format: ##H Format the Rust and Python codebase
 .PHONY: lint
 lint: ##H Run clippy to lint the codebase and check compilation
 	$(CARGO) check
-	$(CARGO) clippy --all-targets -- -D warnings
+	$(CARGO) clippy --all-targets --all-features -- -D warnings
 	@if [ -n "$(VERBOSE)" ]; then \
 		echo "Running ZK Security Scanner (vuln-002-VeilCash)"; \
 		python3 scripts/detect_vuln_002.py; \
