@@ -3,7 +3,7 @@ name = "zk-matrix-wasm"
 version = "0.1.0"
 edition = "2021"
 description = "WebAssembly client for verifying ZK-Matrix-Join proofs trustlessly in the browser."
-repository = "https://github.com/gamesguru/matrix-zk-stark-dag-demo"
+repository = "https://github.com/gamesguru/ruma-zk"
 license-file = "LICENSE.txt"
 
 [lib]
