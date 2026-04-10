@@ -27,7 +27,7 @@ install: ##H Install the ruma-zk binary globally via cargo
 .PHONY: demo
 demo: ##H Run the ZK-Matrix-Join Simulation (Demo)
 	@echo "Running ZK-Matrix-Join Demo..."
-	$(CARGO) run --release --bin ruma-zk -- demo
+	$(CARGO) run --release --bin ruma-zk -- demo --input res/benchmark_1k.json
 
 .PHONY: demo-lite
 demo-lite: ##H Run Simulation with Tiny 5-Event Graph
@@ -42,7 +42,7 @@ benchmark-batch: ##H Run Simulation with Concise DSL Fixtures
 .PHONY: prove
 prove: ##H Generate full Jolt STARK Proof
 	@echo "Generating Jolt STARK Proof"
-	RUST_LOG=info $(CARGO) run --release --bin ruma-zk -- prove
+	RUST_LOG=info $(CARGO) run --release --bin ruma-zk -- prove --input res/benchmark_1k.json
 
 .PHONY: verify
 verify: ##H Verify an existing Jolt STARK Proof

@@ -176,18 +176,9 @@ fn prepare_execution(input: Option<String>, batch: Option<String>, limit: usize)
         total_raw_len = evs.len();
         evs
     } else {
-        let state_file_path = "res/benchmark_1k.json";
-        let fallback_path = "res/ruma_bootstrap_events.json";
-
         let path: String = input
             .or_else(|| std::env::var("MATRIX_FIXTURE_PATH").ok())
-            .unwrap_or_else(|| {
-                if std::path::Path::new(state_file_path).exists() {
-                    state_file_path.to_string()
-                } else {
-                    fallback_path.to_string()
-                }
-            });
+            .expect("No Matrix fixture path provided. Use --input <PATH> or set the MATRIX_FIXTURE_PATH environment variable.");
         fixture_path_str = path.clone();
 
         println!(
