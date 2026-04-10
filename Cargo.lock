@@ -2138,6 +2138,7 @@ checksum = "d3f2ad9f15a07f4a0e1677124f9120ce7e83ab7e1ca7186af0ca9da529b62e80"
 [[package]]
 name = "ruma-lean"
 version = "0.1.0"
+source = "git+https://github.com/gamesguru/ruma-lean.git#47750a6584d0c8b7034d0391719b4bfb8e5f4d83"
 dependencies = [
  "base64",
  "ed25519-consensus",
