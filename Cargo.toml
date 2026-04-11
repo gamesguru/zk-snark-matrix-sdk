@@ -7,9 +7,6 @@ description = "High-level API for generating and verifying Matrix State Resoluti
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/gamesguru/ruma-zk"
 
-[[bin]]
-name = "ruma-zk"
-path = "main.rs"
 
 [dependencies]
 jolt-sdk = { version = "0.1.0", git = "https://github.com/a16z/jolt.git", features = ["host"] }
