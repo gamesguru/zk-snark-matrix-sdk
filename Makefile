@@ -77,16 +77,6 @@ format: ##H Format the Rust and Python codebase
 	-black $(LINT_LOCS_PY)
 	-prettier -w .
 
-.PHONY: coverage
-coverage: ##H Run workspace code coverage and generate HTML report
-	@echo "Running focused workspace code coverage"
-	$(CARGO) tarpaulin --out Html \
-		--output-dir .tmp/coverage \
-		--exclude-files "**/target/*" \
-		--ignore-panics \
-		--ignore-tests \
-		--skip-clean
-
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
