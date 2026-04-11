@@ -33,6 +33,8 @@ resolver = "2"
 members = ["ruma_zk_guest", "demo_unoptimized_guest", "ruma-zk-wasm"]
 
 [patch.crates-io]
+hex = { git = "https://github.com/KokaKiwi/rust-hex", branch = "main" }
+base64 = { git = "https://github.com/marshallpierce/rust-base64", tag = "v0.21.7" }
 ark-ff = { git = "https://github.com/a16z/arkworks-algebra", branch = "dev/twist-shout" }
 ark-ec = { git = "https://github.com/a16z/arkworks-algebra", branch = "dev/twist-shout" }
 ark-poly = { git = "https://github.com/a16z/arkworks-algebra", branch = "dev/twist-shout" }
