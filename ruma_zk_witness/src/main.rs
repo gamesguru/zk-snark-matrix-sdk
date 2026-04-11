@@ -2,4 +2,4 @@
 #![no_main]
 
 #[allow(unused_imports)]
-use ruma_zk_guest_unoptimized::*;
+use ruma_zk_witness::*;
