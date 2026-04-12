@@ -2,6 +2,6 @@
 resolver = "2"
 members = [
     "ruma-zk",
-    "ruma-zk-ctopology",
+    "ruma-zk-topair",
     "ruma-zk-wasm",
 ]

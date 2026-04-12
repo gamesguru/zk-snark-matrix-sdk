@@ -1418,14 +1418,14 @@ dependencies = [
  "rayon",
  "reqwest",
  "ruma-lean",
- "ruma-zk-ctopology",
+ "ruma-zk-topair",
  "serde",
  "serde_json",
  "sha2 0.10.9",
 ]
 
 [[package]]
-name = "ruma-zk-ctopology"
+name = "ruma-zk-topair"
 version = "0.1.0"
 dependencies = [
  "ahash",

@@ -15,7 +15,7 @@
 #![forbid(unsafe_code)]
 
 use clap::Parser;
-use ctopology::{prove_matrix_resolution, StarGraph};
+use ruma_zk_topair::{prove_matrix_resolution, MatrixEvent, RawProof, StarGraph};
 
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -82,7 +82,7 @@ enum Commands {
 }
 
 struct ExecutionData {
-    events: Vec<ctopology::MatrixEvent>,
+    events: Vec<MatrixEvent>,
 }
 
 fn prepare_execution(input_path: Option<String>, limit: Option<usize>) -> ExecutionData {
@@ -104,10 +104,10 @@ fn prepare_execution(input_path: Option<String>, limit: Option<usize>) -> Execut
     let raw_events: Vec<serde_json::Value> =
         serde_json::from_str(&file_content).expect("Failed to parse JSON");
     let limit = limit.unwrap_or(raw_events.len());
-    let events: Vec<ctopology::MatrixEvent> = raw_events
+    let events: Vec<MatrixEvent> = raw_events
         .into_iter()
         .take(limit)
-        .map(|v| ctopology::MatrixEvent {
+        .map(|v| MatrixEvent {
             event_id: v["event_id"].as_str().unwrap_or_default().to_string(),
             event_type: v["event_type"].as_str().unwrap_or_default().to_string(),
             state_key: v["state_key"].as_str().unwrap_or_default().to_string(),
@@ -172,7 +172,7 @@ fn main() {
         Commands::Verify { proof_path } => {
             println!("Loading CTopology proof from {}...", proof_path);
             let proof_bytes = std::fs::read(&proof_path).expect("Failed to read proof file");
-            let proof: ctopology::RawProof =
+            let proof: RawProof =
                 bincode::deserialize(&proof_bytes).expect("Failed to deserialize proof");
 
             println!("Verifying Merkle openings...");
