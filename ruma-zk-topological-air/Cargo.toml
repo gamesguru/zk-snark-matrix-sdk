@@ -9,24 +9,12 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+p3-air.workspace = true
 p3-baby-bear.workspace = true
-p3-challenger = "0.5.2"
-p3-commit = "0.5.2"
-# Plonky3 primitives
 p3-field.workspace = true
-p3-keccak = "0.5.2"
 p3-matrix = "0.5.2"
-p3-merkle-tree = "0.5.2"
-p3-symmetric = "0.5.2"
 
-# High-performance hashing and processing
-ahash = "0.8"
 bincode.workspace = true
-hex = "0.4"
-rand = "0.8"
-rayon = "1.8"
-ruma-lean = { workspace = true }
-ruma-zk-verifier = { workspace = true }
 serde.workspace = true
 serde_json.workspace = true
 tiny-keccak.workspace = true

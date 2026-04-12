@@ -23,3 +23,15 @@ ruma-zk-topological-air = { workspace = true }
 serde.workspace = true
 serde_json.workspace = true
 sha2 = "0.10.8"
+
+ahash = "0.8"
+p3-baby-bear.workspace = true
+p3-challenger = "0.5.2"
+p3-commit = "0.5.2"
+p3-field.workspace = true
+p3-keccak = "0.5.2"
+p3-matrix = "0.5.2"
+p3-merkle-tree = "0.5.2"
+p3-symmetric = "0.5.2"
+rand = "0.8"
+tiny-keccak.workspace = true
