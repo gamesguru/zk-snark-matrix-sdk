@@ -11,11 +11,11 @@ license = "MIT OR Apache-2.0"
 crate-type = ["cdylib"]
 
 [dependencies]
-wasm-bindgen = "0.2"
 getrandom = { version = "0.2", features = ["js"] }
+wasm-bindgen = "0.2"
 web-time = "1.1"
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.42"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+wasm-bindgen-test = "0.3.42"

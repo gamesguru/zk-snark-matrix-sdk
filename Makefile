@@ -22,6 +22,7 @@ LINT_LOCS_SH = $$(git ls-files '*.sh')
 format: ##H Format codebase
 	-prettier -w .
 	-pre-commit run --all-files
+	-cargo sort --workspace --grouped
 	-black $(LINT_LOCS_PY)
 	-isort $(LINT_LOCS_PY)
 	-shfmt -w $(LINT_LOCS_SH)
