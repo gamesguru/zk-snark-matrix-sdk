@@ -486,6 +486,7 @@ fn main() {
             println!("> Mode: HYBRID (Topological Hint + STARK SHA-256)");
 
             let mut cp = Program::new("ruma_zk_witness");
+            cp.set_stack_size(1048576);
             cp.set_func("prove_hybrid_resolution");
             let sp = ruma_zk_witness::preprocess_shared_prove_hybrid_resolution(&mut cp)
                 .expect("shared preprocess failed");
@@ -532,6 +533,7 @@ fn main() {
             println!("> Setting up Jolt verifier environment...");
 
             let mut cp = Program::new("ruma_zk_witness");
+            cp.set_stack_size(1048576);
             cp.set_func("prove_hybrid_resolution");
             let sp = ruma_zk_witness::preprocess_shared_prove_hybrid_resolution(&mut cp)
                 .expect("shared preprocess failed");
